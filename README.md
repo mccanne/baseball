@@ -436,7 +436,7 @@ float64 string  float64
 How about we just select a few fields and show them
 as a table...
 ```
-zq -f table "dimaggio | cut nameGiven,nameLast,weight,year" namebb.zng
+zq -f table "dimaggio | cut nameGiven,nameLast,weight,year" bb.zng
 ```
 
 ### back to the join key
