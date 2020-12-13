@@ -14,13 +14,13 @@ ZNG files, which blends UX concepts from log search and SQL.
 
 In this example, we will take a large set of relational tables
 conforming to a
-(complicated relational model)[https://github.com/WebucatorTraining/lahman-baseball-mysql/blob/master/lahman-model.png]
+[complicated relational model](https://github.com/WebucatorTraining/lahman-baseball-mysql/blob/master/lahman-model.png)
 and dump them all into a "micro data lake" (i.e., a single file on your laptop)
 represented as  a file the ZNG data format (ZNG is a row-structured data format
 that  implements the Z data model).
 
 If you want to use MySQL instead, this
-(github repo)[https://github.com/WebucatorTraining/lahman-baseball-mysql]
+[github repo](https://github.com/WebucatorTraining/lahman-baseball-mysql)
 has detailed instructions for setting it all up and loading the data
 into your server.
 
@@ -81,9 +81,7 @@ you can do analytics with it too.
 Let's search for Joe Dimaggio...
 ```
 zq -f ndjson dimaggio bb.zng
-```
-gives
-```
+===
 {"bats":"R","bbrefID":"dimagdo01","birthCity":"San Francisco","birthCountry":"USA","birthDay":12,"birthMonth":2,"birthState":"CA","birthYear":1917,"deathCity":"Marion","deathCountry":"USA","deathDay":8,"deathMonth":5,"deathState":"MA","deathYear":2009,"debut":"1940-04-16","finalGame":"1953-05-09","height":69,"nameFirst":"Dom","nameGiven":"Dominic Paul","nameLast":"DiMaggio","playerID":"dimagdo01","retroID":"dimad101","throws":"R","weight":168}
 {"bats":"R","bbrefID":"dimagjo01","birthCity":"Martinez","birthCountry":"USA","birthDay":25,"birthMonth":11,"birthState":"CA","birthYear":1914,"deathCity":"Hollywood","deathCountry":"USA","deathDay":8,"deathMonth":3,"deathState":"FL","deathYear":1999,"debut":"1936-05-03","finalGame":"1951-09-30","height":74,"nameFirst":"Joe","nameGiven":"Joseph Paul","nameLast":"DiMaggio","playerID":"dimagjo01","retroID":"dimaj101","throws":"R","weight":193}
 {"bats":"R","bbrefID":"dimagvi01","birthCity":"Martinez","birthCountry":"USA","birthDay":6,"birthMonth":9,"birthState":"CA","birthYear":1912,"deathCity":"North Hollywood","deathCountry":"USA","deathDay":3,"deathMonth":10,"deathState":"CA","deathYear":1986,"debut":"1937-04-19","finalGame":"1946-06-06","height":71,"nameFirst":"Vince","nameGiven":"Vincent Paul","nameLast":"DiMaggio","playerID":"dimagvi01","retroID":"dimav101","throws":"R","weight":183}
@@ -91,9 +89,7 @@ gives
 If you have `jq` installed, you can view this JSON a bit more clearly...
 ```
 zq -f ndjson dimaggio bb.zng | jq
-```
-giving this formatted view...
-```
+===
 {
   "bats": "R",
   "bbrefID": "dimagdo01",
@@ -186,9 +182,7 @@ You can do SQL-like projections using log-search style syntax and view
 the data in other formats, e.g.,
 ```
 zq -f table "dimaggio | cut nameGiven,nameLast,bbrefID" bb.zng
-```
-which gives thi simple summary..
-```
+===
 NAMEGIVEN    NAMELAST BBREFID
 Dominic Paul DiMaggio dimagdo01
 Joseph Paul  DiMaggio dimagjo01
@@ -386,9 +380,7 @@ set we don't know about.  Let's check...
 If we count the schemas from our search...
 ```
 zq -f table "dimagvi01 | first(.) by typeof(.) | count()" bb.zng
-```
-we get
-```
+===
 COUNT
 8
 ```
@@ -396,9 +388,7 @@ Hmm, weren't there a lot more CSV files when we unzip'd the data archive?
 Maybe `dimagvi01` isn't in every table.  Let's count up all of record types:
 ```
 zq -f table "by typeof(.) | count()" bb.zng
-```
-and we get
-```
+===
 COUNT
 131
 ```
@@ -447,4 +437,91 @@ How about we just select a few fields and show them
 as a table...
 ```
 zq -f table "dimaggio | cut nameGiven,nameLast,weight,year" namebb.zng
+```
+
+### back to the join key
+
+Ok, we had guessed bbrefID was a join key, but what are the other columns
+where we might want to join to?
+
+> We could look through things by hand but it would be nice to have a columnsOf(value)
+> function that would give field names that matched the given value as an type ([string])
+
+In the meantime, we can look at all the types of that have `dimagvi01` somewhere
+in the row and eyeball... we can get a little help from grep...
+
+zq -f ndjson "dimagvi01 | first(.) by typeof(.)" bb.zng | jq | grep dimagvi01
+===
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "bbrefID": "dimagvi01",
+    "playerID": "dimagvi01",
+    "playerID": "dimagvi01",
+```
+Ah okay, it's really about the playerID field.  Let's pivot on that...
+```
+zq -f ndjson "count() by playerID" bb.zng
+===
+{"count":5,"playerID":"beldeir01"}
+{"count":5,"playerID":"smithja01"}
+{"count":7,"playerID":"graharo01"}
+{"count":15,"playerID":"fowlebo01"}
+{"count":11,"playerID":"stephwa01"}
+{"count":6,"playerID":"metcato01"}
+{"count":13,"playerID":"johnsmi04"}
+{"count":9,"playerID":"baezsa01"}
+{"count":24,"playerID":"prothdo01"}
+{"count":32,"playerID":"colmafr01"}
+{"count":22,"playerID":"bacsimi02"}
+{"count":39,"playerID":"rominau01"}
+{"count":70,"playerID":"bondto01"}
+{"count":13,"playerID":"mclauwa01"}
+{"count":9,"playerID":"appleed01"}
+{"count":49,"playerID":"harrimi01"}
+{"count":77,"playerID":"bellgu01"}
+...
+```
+That's a big list... how many players are there?
+```
+zq -f table "count() by playerID | count()" bb.zng
+===
+```
+COUNT
+20091
+```
+20k sounds about right.
+
+### Webucator examples
+
+From [Webucator](https://github.com/WebucatorTraining/lahman-baseball-mysql),
+here's "most homeruns in 1977"...
+
+```
+SELECT p.nameFirst, p.nameLast, b.HR, t.name AS team, b.yearID
+FROM batting b
+    JOIN people p ON p.playerID = b.playerID
+    JOIN teams t ON t.ID = b.team_ID
+WHERE b.YearID = 1977
+ORDER BY b.HR DESC
+LIMIT 5;
+```
+Let's add some "table" names to the data for convenience (this could have been
+done at "ingest" time ... more on that later).
+
+XXX need switch for this
+
+```
+zq "( AB!=null OR AB=null | put table=batting ; " bb.zng > bb2.zng
+```
+
+We don't have different tables but the rows in the zng file aren't denormalized
+so we still need to do joins (i.e., self joins passing over the same data)
+to pull this type of output together.
+
+```
+yearID=1977 | nameFirst, nameList  | sort -r HR | head 5
 ```
