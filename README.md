@@ -492,7 +492,6 @@ That's a big list... how many players are there?
 ```
 zq -f table "count() by playerID | count()" bb.zng
 ===
-```
 COUNT
 20091
 ```
