@@ -450,6 +450,7 @@ where we might want to join to?
 In the meantime, we can look at all the types of that have `dimagvi01` somewhere
 in the row and eyeball... we can get a little help from grep...
 
+```
 zq -f ndjson "dimagvi01 | first(.) by typeof(.)" bb.zng | jq | grep dimagvi01
 ===
     "playerID": "dimagvi01",
@@ -462,7 +463,9 @@ zq -f ndjson "dimagvi01 | first(.) by typeof(.)" bb.zng | jq | grep dimagvi01
     "playerID": "dimagvi01",
     "playerID": "dimagvi01",
 ```
+
 Ah okay, it's really about the playerID field.  Let's pivot on that...
+
 ```
 zq -f ndjson "count() by playerID" bb.zng
 ===
