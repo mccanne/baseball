@@ -34,7 +34,7 @@ Or you can just make a ZNG file and use `zq`.
 You will need:
 * the Sean Lahman data set from 2019 in CSV format,
 * the `zq` CLI tool mentioned above, and
-* `cj` the simple tool in this repo for converting CSV to JSON.
+* `cz` the simple tool in this repo for converting CSV to ZNG.
 
 First, install zq.  You can download a
 [pre-built binary from Brim](https://www.brimsecurity.com/download/), or
@@ -42,9 +42,9 @@ if you have Go installed, you can grab it and related tooling from zq github rep
 ```
 go get https://github.com/brimsec/zq
 ```
-Next you'll need to install `cj` (a very small Go program that converts CSV to JSON):
+Next you'll need to install `cz` (a very small Go program that converts CSV to JSON):
 ```
-go get https://github.com/mccanne/cj
+go get https://github.com/mccanne/cz
 ```
 Finally you need the data, in CSV form.  You can download the
 [2019 – comma-delimited version](https://github.com/chadwickbureau/baseballdatabank/archive/master.zip)
@@ -52,14 +52,14 @@ from Sean Lahman's
 [download page](http://www.seanlahman.com/baseball-archive/statistics/).
 
 The Lahman data will appear as a zip file called `baseballdatabank-master.zip`,
-which you should unzip into baseballdatabank-master and run the following command:
+which you should unzip into ``./baseballdatabank-master` and run the following command:
 ```
 unzip baseballdatabank-master.zip
-find baseballdatabank-master -name \*.csv -exec echo "cat" {} "| cj" \; | sh | zq -i ndjson -o bb.zng -
+find baseballdatabank-master -name \*.csv -exec echo "cat" {} "| cz" \; | sh > bb.zng
 ```
 This gives you a file called `bb.zng`, which holds all of the tables from
 the Lahamn data set as a stream of heterogenous records in accordance with
-the Z data model.  The file should be 25874793 bytes.  You can also confirm
+the Z data model.  The file should be 25222375 bytes.  You can also confirm
 the number of rows that we collected:
 ```
 zq -f table "count()" bb.zng
@@ -69,9 +69,6 @@ which should output
 COUNT
 586970
 ```
-
-> NOTE: once the ZSON parser is merged we can have cj emit ZSON and have
-> some simple heuristics to recognize date strings and turn them into type time.
 
 ## Examples
 
