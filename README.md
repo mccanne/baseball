@@ -40,11 +40,11 @@ First, install zq.  You can download a
 [pre-built binary from Brim](https://www.brimsecurity.com/download/), or
 if you have Go installed, you can grab it and related tooling from zq github repo:
 ```
-go get https://github.com/brimsec/zq
+go get github.com/brimsec/zq
 ```
 Next you'll need to install `cz` (a very small Go program that converts CSV to JSON):
 ```
-go get https://github.com/mccanne/cz
+go get github.com/mccanne/cz
 ```
 Finally you need the data, in CSV form.  You can download the
 [2019 – comma-delimited version](https://github.com/chadwickbureau/baseballdatabank/archive/master.zip)
