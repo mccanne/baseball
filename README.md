@@ -215,7 +215,9 @@ group the results by the type of each row (aka Z record), and in this case
 apply the `first()` aggregation function to just give the first row that
 appears for each type, as follows:
 ```
+zq -f ndjson "dimagvi01 | by typeof(.)" bb.zng | jq
 zq -f ndjson "dimagvi01 | any(.) by typeof(.)" bb.zng | jq
+zq -f ndjson 'SELECT typeof(.) FROM true=true WHERE playerID=dimagvi01 GROUP BY typeof' demo/bb.zng | jq
 ```
 Note that `.` refers the entire row of each row in the query and any
 is an "aggregation" to reduces a group of records to any one of the records
