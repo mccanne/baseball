@@ -78,7 +78,7 @@ you can do analytics with it too.
 
 Let's search for Joe Dimaggio...
 ```
-zq -f zson dimaggio bb.zng
+zq -f ndjson dimaggio bb.zng
 ===
 {"bats":"R","bbrefID":"dimagdo01","birthCity":"San Francisco","birthCountry":"USA","birthDay":12,"birthMonth":2,"birthState":"CA","birthYear":1917,"deathCity":"Marion","deathCountry":"USA","deathDay":8,"deathMonth":5,"deathState":"MA","deathYear":2009,"debut":"1940-04-16","finalGame":"1953-05-09","height":69,"nameFirst":"Dom","nameGiven":"Dominic Paul","nameLast":"DiMaggio","playerID":"dimagdo01","retroID":"dimad101","throws":"R","weight":168}
 {"bats":"R","bbrefID":"dimagjo01","birthCity":"Martinez","birthCountry":"USA","birthDay":25,"birthMonth":11,"birthState":"CA","birthYear":1914,"deathCity":"Hollywood","deathCountry":"USA","deathDay":8,"deathMonth":3,"deathState":"FL","deathYear":1999,"debut":"1936-05-03","finalGame":"1951-09-30","height":74,"nameFirst":"Joe","nameGiven":"Joseph Paul","nameLast":"DiMaggio","playerID":"dimagjo01","retroID":"dimaj101","throws":"R","weight":193}
