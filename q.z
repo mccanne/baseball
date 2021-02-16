@@ -1,0 +1,7 @@
+SELECT batting.HR
+FROM '{playerID:string,yearID:float64,stint:float64,teamID:string,lgID:string,G:float64,AB:float64,R:float64,H:float64,"2B":float64,"3B":float64,HR:float64,RBI:float64,SB:float64,CS:float64,BB:float64,SO:float64,IBB:float64,HBP:float64,SH:float64,SF:float64,GIDP:float64}' batting
+  JOIN '{playerID:string,birthYear:float64,birthMonth:float64,birthDay:float64,birthCountry:string,birthState:string,birthCity:string,deathYear:float64,deathMonth:float64,deathDay:float64,deathCountry:string,deathState:string,deathCity:string,nameFirst:string,nameLast:string,nameGiven:string,weight:float64,height:float64,bats:string,throws:string,debut:string,finalGame:string,retroID:string,bbrefID:string}' people
+    ON batting.playerID = people.playerID
+ORDER BY batting.HR DESC
+LIMIT 5
+//  JOIN {playerID:string,birthYear:float64,birthMonth:float64,birthDay:float64,birthCountry:string,birthState:string,birthCity:string,deathYear:float64,deathMonth:float64,deathDay:float64,deathCountry:string,deathState:string,deathCity:string,nameFirst:string,nameLast:string,nameGiven:string,weight:float64,height:float64,bats:string,throws:string,debut:string,finalGame:string,retroID:string,bbrefID:string}

@@ -55,8 +55,9 @@ The Lahman data will appear as a zip file called `baseballdatabank-master.zip`,
 which you should unzip into ``./baseballdatabank-master` and run the following command:
 ```
 unzip baseballdatabank-master.zip
-find baseballdatabank-master -name \*.csv -exec echo "cat" {} "| cz" \; | sh > bb.zng
+find baseballdatabank-master -name \*.csv -exec echo "cat" {} "| cz" \; | sh | zq -o bb.zng nullify -
 ```
+
 This gives you a file called `bb.zng`, which holds all of the tables from
 the Lahamn data set as a stream of heterogenous records in accordance with
 the Z data model.  The file should be 25222375 bytes.  You can also confirm
@@ -77,7 +78,7 @@ you can do analytics with it too.
 
 Let's search for Joe Dimaggio...
 ```
-zq -f ndjson dimaggio bb.zng
+zq -f zson dimaggio bb.zng
 ===
 {"bats":"R","bbrefID":"dimagdo01","birthCity":"San Francisco","birthCountry":"USA","birthDay":12,"birthMonth":2,"birthState":"CA","birthYear":1917,"deathCity":"Marion","deathCountry":"USA","deathDay":8,"deathMonth":5,"deathState":"MA","deathYear":2009,"debut":"1940-04-16","finalGame":"1953-05-09","height":69,"nameFirst":"Dom","nameGiven":"Dominic Paul","nameLast":"DiMaggio","playerID":"dimagdo01","retroID":"dimad101","throws":"R","weight":168}
 {"bats":"R","bbrefID":"dimagjo01","birthCity":"Martinez","birthCountry":"USA","birthDay":25,"birthMonth":11,"birthState":"CA","birthYear":1914,"deathCity":"Hollywood","deathCountry":"USA","deathDay":8,"deathMonth":3,"deathState":"FL","deathYear":1999,"debut":"1936-05-03","finalGame":"1951-09-30","height":74,"nameFirst":"Joe","nameGiven":"Joseph Paul","nameLast":"DiMaggio","playerID":"dimagjo01","retroID":"dimaj101","throws":"R","weight":193}
@@ -169,7 +170,7 @@ zq -f ndjson dimaggio bb.zng | jq
 > TBD: we should make the zq `-pretty` for ZSON also work for JSON
 > so we don't need to pipe to jq here
 
-Hmm, turns out there were two other Dimmagios.
+Hmm, turns out there were two other Dimaggios.
 
 The nice thing here is that you didn't have to look at a data model
 or sift through SQL schemas
@@ -214,13 +215,28 @@ group the results by the type of each row (aka Z record), and in this case
 apply the `first()` aggregation function to just give the first row that
 appears for each type, as follows:
 ```
-zq -f ndjson "dimagvi01 | r=first(.) by typeof(.)" bb.zng | jq
+zq -f ndjson "dimagvi01 | any(.) by typeof(.)" bb.zng | jq
 ```
-Note that `.` refers the entire row of each row in the query.
+Note that `.` refers the entire row of each row in the query and any
+is an "aggregation" to reduces a group of records to any one of the records
+in the group.  This is a handy way to pick out a random value
+in a group by.
+
 This tables are very wide so I used JSON output with jq and we get this:
 ```
 {
-  "r": {
+  "any": {
+    "awardID": "Baseball Magazine All-Star",
+    "lgID": "NL",
+    "notes": "CF",
+    "playerID": "dimagvi01",
+    "tie": null,
+    "yearID": 1943
+  },
+  "typeof": "{playerID:string,awardID:string,yearID:float64,lgID:string,tie:string,notes:string}"
+}
+{
+  "any": {
     "A": 21,
     "CS": null,
     "DP": 2,
@@ -239,10 +255,11 @@ This tables are very wide so I used JSON output with jq and we get this:
     "stint": 1,
     "teamID": "BSN",
     "yearID": 1937
-  }
+  },
+  "typeof": "{playerID:string,yearID:float64,stint:float64,teamID:string,lgID:string,POS:string,G:float64,GS:float64,InnOuts:float64,PO:float64,A:float64,E:float64,DP:float64,PB:float64,WP:float64,SB:float64,CS:float64,ZR:float64}"
 }
 {
-  "r": {
+  "any": {
     "bats": "R",
     "bbrefID": "dimagvi01",
     "birthCity": "Martinez",
@@ -267,10 +284,11 @@ This tables are very wide so I used JSON output with jq and we get this:
     "retroID": "dimav101",
     "throws": "R",
     "weight": 183
-  }
+  },
+  "typeof": "{playerID:string,birthYear:float64,birthMonth:float64,birthDay:float64,birthCountry:string,birthState:string,birthCity:string,deathYear:float64,deathMonth:float64,deathDay:float64,deathCountry:string,deathState:string,deathCity:string,nameFirst:string,nameLast:string,nameGiven:string,weight:float64,height:float64,bats:string,throws:string,debut:string,finalGame:string,retroID:string,bbrefID:string}"
 }
 {
-  "r": {
+  "any": {
     "GS": 126,
     "G_1b": 0,
     "G_2b": 0,
@@ -292,10 +310,11 @@ This tables are very wide so I used JSON output with jq and we get this:
     "playerID": "dimagvi01",
     "teamID": "BSN",
     "yearID": 1937
-  }
+  },
+  "typeof": "{yearID:float64,teamID:string,lgID:string,playerID:string,G_all:float64,GS:float64,G_batting:float64,G_defense:float64,G_p:float64,G_c:float64,G_1b:float64,G_2b:float64,G_3b:float64,G_ss:float64,G_lf:float64,G_cf:float64,G_rf:float64,G_of:float64,G_dh:float64,G_ph:float64,G_pr:float64}"
 }
 {
-  "r": {
+  "any": {
     "awardID": "MVP",
     "lgID": "NL",
     "playerID": "dimagvi01",
@@ -303,10 +322,11 @@ This tables are very wide so I used JSON output with jq and we get this:
     "pointsWon": 10,
     "votesFirst": 0,
     "yearID": 1941
-  }
+  },
+  "typeof": "{awardID:string,yearID:float64,lgID:string,playerID:string,pointsWon:float64,pointsMax:float64,votesFirst:float64}"
 }
 {
-  "r": {
+  "any": {
     "2B": 18,
     "3B": 4,
     "AB": 493,
@@ -329,20 +349,22 @@ This tables are very wide so I used JSON output with jq and we get this:
     "stint": 1,
     "teamID": "BSN",
     "yearID": 1937
-  }
+  },
+  "typeof": "{playerID:string,yearID:float64,stint:float64,teamID:string,lgID:string,G:float64,AB:float64,R:float64,H:float64,\"2B\":float64,\"3B\":float64,HR:float64,RBI:float64,SB:float64,CS:float64,BB:float64,SO:float64,IBB:float64,HBP:float64,SH:float64,SF:float64,GIDP:float64}"
 }
 {
-  "r": {
+  "any": {
     "Gcf": 129,
     "Glf": 0,
     "Grf": 1,
     "playerID": "dimagvi01",
     "stint": 1,
     "yearID": 1937
-  }
+  },
+  "typeof": "{playerID:string,yearID:float64,stint:float64,Glf:float64,Gcf:float64,Grf:float64}"
 }
 {
-  "r": {
+  "any": {
     "GP": 1,
     "gameID": "ALS194307130",
     "gameNum": 0,
@@ -351,20 +373,10 @@ This tables are very wide so I used JSON output with jq and we get this:
     "startingPos": null,
     "teamID": "PIT",
     "yearID": 1943
-  }
-}
-{
-  "r": {
-    "awardID": "Baseball Magazine All-Star",
-    "lgID": "NL",
-    "notes": "CF",
-    "playerID": "dimagvi01",
-    "tie": null,
-    "yearID": 1943
-  }
+  },
+  "typeof": "{playerID:string,yearID:float64,gameNum:float64,gameID:string,teamID:string,lgID:string,GP:float64,startingPos:float64}"
 }
 ```
-> TBD: TAKE OUT 'r' above
 
 What's cool here is you don't have to look at any models or schemas.  Just
 throw all the data into a zng file and run type-oriented queries to
@@ -376,7 +388,7 @@ set we don't know about.  Let's check...
 
 If we count the schemas from our search...
 ```
-zq -f table "dimagvi01 | first(.) by typeof(.) | count()" bb.zng
+zq -f table "dimagvi01 | any(.) by typeof(.) | count()" bb.zng
 ===
 COUNT
 8
@@ -387,48 +399,16 @@ Maybe `dimagvi01` isn't in every table.  Let's count up all of record types:
 zq -f table "by typeof(.) | count()" bb.zng
 ===
 COUNT
-131
+25
 ```
-What a minute, there weren't that many csv files.
-```
-find baseballdatabank-master | grep \.csv | wc
-```
-says there are 28.  How did we get 131?!
+That sounds about right is in lines with all tables in the
+[the SQL model mentioned above.](https://github.com/WebucatorTraining/lahman-baseball-mysql/blob/master/lahman-model.png)
 
-Well, this is a shortcoming of CSV and JSON.  When the data comes in to zq
-row by row, sometimes there are fields missing (i.e., JSON nulls) then
-`zq` doesn't know if it's a number or a string so it assigns the type each
-null field the Z type "null".  This creates many variations of types
-where different null values appear in different fiedls.
-
-For example, let's just take the joint presence of types of a few stats,
-say PB, RP, and SB:
-```
-zq -f table "by pb=typeof(PB),wp=typeof(WP),sb=typeof(SB)" bb.zng
-===
-PB      WP      SB
-string  string  string
-float64 string  float64
-float64 string  string
-float64 float64 float64
-```
-> What?!  Turns out zq ndjson parser is assigning string(null) to null
-> fields instead of null(null).
-
-Of course, with a comprehensive look over all the
-data, zq could be used to infer accurate types of everything but it requires
-more work, and the beauty if this approach is that zq is forgiving and
-adaptive.  It will work just fine with the 131 types.
-```
-zq "* | ( filter PB=null | put PB=null ; filter PB != null ) | filter *" bb.zng > bb2.zng
-zq -f table "by pb=typeof(PB),wp=typeof(WP),sb=typeof(SB)" bb2.zng
-===
-PB      WP      SB
-null    string  string
-float64 string  string
-float64 float64 float64
-float64 string  float64
-```
+> Note that the SQL model actually has a few more tables as it turns out the
+> same of the tables share exactly the same schema and the shell command
+> from above lost the information about which file held which CSV table.
+> In other article, we will write about how you can shape and tag your
+> data using Z when you transform or ingest data from CSV or JSON into Z.
 
 How about we just select a few fields and show them
 as a table...
@@ -448,7 +428,7 @@ In the meantime, we can look at all the types of that have `dimagvi01` somewhere
 in the row and eyeball... we can get a little help from grep...
 
 ```
-zq -f ndjson "dimagvi01 | first(.) by typeof(.)" bb.zng | jq | grep dimagvi01
+zq -f ndjson "dimagvi01 | any(.) by typeof(.)" bb.zng | jq | grep dimagvi01
 ===
     "playerID": "dimagvi01",
     "playerID": "dimagvi01",
@@ -494,6 +474,18 @@ COUNT
 ```
 20k sounds about right.
 
+
+```
+zq -f ndjson "exists(RBI,HR) | by typeof(.)" bb.zng
+zq -f ndjson "exists(RBI,HR) | any(.) by typeof(.) | cut fields(any)" bb.zng
+zq -f ndjson "exists(RBI,HR) | not exists(stint) | any(.) by typeof(.) | cut fields(any)" bb.zng
+```
+
+Now grab the relevant type...
+```
+ zq -f zson -pretty=0 "exists(RBI,HR) | not exists(stint) | by typeof(.)" bb.zng
+```
+
 ### Webucator examples
 
 From [Webucator](https://github.com/WebucatorTraining/lahman-baseball-mysql),
@@ -511,6 +503,11 @@ LIMIT 5;
 Let's add some "table" names to the data for convenience (this could have been
 done at "ingest" time ... more on that later).
 
+fields()
+has()
+is()
+sort(fields())
+
 XXX need switch for this
 
 ```
@@ -524,3 +521,40 @@ to pull this type of output together.
 ```
 yearID=1977 | nameFirst, nameList  | sort -r HR | head 5
 ```
+
+# NOTES
+
+## analytics
+```
+zq -f ndjson 'count() by teamID' bb.zng
+zq -f ndjson 'count() by teamID | sort teamID' bb.zng
+zq -f ndjson 'count() by teamID | sort teamID | all=collect(to_lower(teamID))' bb.zng
+zq -f ndjson 'count() by teamID | sort teamID | all=collect(to_lower(teamID)) | cut ana=all[1]' bb.zng
+zq -f ndjson 'count() by teamID | sort teamID | all=collect(to_lower(teamID)) | cut last10=all[-10:] | put len(last10)' bb.zng
+```
+
+## search
+
+zq -f ndjson 'dimagg' bb.zng
+zq -f ndjson 'yearID < 1930 | head 5' bb.zng
+
+## combined search and analytics
+
+zq -f ndjson 'yearID < 1930 | union(teamID) by yearID | sort yearID' bb.zng
+
+## shape exploration
+
+zq -f ndjson 'by typeof(.)' bb.zng | jq
+zq -f ndjson 'by typeof(.) | count()' bb.zng | jq
+zq -f ndjson 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}"' bb.zng | jq | less
+
+zq -o salaries.zng 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}"' bb.zng
+zq -f ndjson 'count()' salaries.zng
+zq -f ndjson 'by typeof(.)' salaries.zng
+
+zq -f ndjson 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}" or typeof(.)="{schoolID:string,name_full:string,city:string,state:string,country:string}"' bb.zng | jq | less
+zq -f ndjson 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}" or typeof(.)="{schoolID:string,name_full:string,city:string,state:string,country:string}" | fuse' bb.zng | jq | less
+zq -f ndjson 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}" or typeof(.)="{schoolID:string,name_full:string,city:string,state:string,country:string}" | fuse | by typeof(.)' bb.zng
+
+
+zq -o salaries.zng 'typeof(.)="{yearID:float64,teamID:string,lgID:string,playerID:string,salary:float64}" | max(salary) by playerID | sort playerID' bb.zng
